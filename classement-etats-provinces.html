@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Classement Économique — États & Provinces</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=IBM+Plex+Mono:wght@300;400;500&family=Libre+Baskerville:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080b10;
+    --surface: #0f1318;
+    --surface2: #151b23;
+    --border: #1e2835;
+    --border2: #2a3545;
+    --gold: #c9a84c;
+    --gold-dim: #8a6e2a;
+    --amber: #e8a020;
+    --teal: #1fcfcf;
+    --rose: #e05c6a;
+    --green: #3ecf8e;
+    --text: #e8edf2;
+    --text-dim: #7a8fa8;
+    --text-muted: #3d5068;
+    --us: #4a9eff;
+    --ca: #ff6b6b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 60px 60px;
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper { position: relative; z-index: 1; max-width: 1440px; margin: 0 auto; padding: 0 32px 64px; }
+
+  /* HEADER */
+  header {
+    padding: 56px 0 40px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 40px;
+  }
+
+  .header-eyebrow {
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .header-eyebrow::before { content:''; display:block; width:32px; height:1px; background:var(--gold); }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 5vw, 72px);
+    font-weight: 900;
+    line-height: 1.0;
+    letter-spacing: -2px;
+    color: var(--text);
+  }
+  h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .header-sub {
+    margin-top: 16px;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    max-width: 600px;
+    line-height: 1.8;
+  }
+
+  .header-meta {
+    display: flex;
+    gap: 32px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+  .meta-item { font-size: 10px; color: var(--text-muted); letter-spacing: 1px; }
+  .meta-item span { color: var(--text-dim); font-weight: 500; }
+
+  /* CONTROLS */
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .region-tabs {
+    display: flex;
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .region-tab {
+    padding: 10px 24px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    background: var(--surface);
+    color: var(--text-muted);
+    transition: all 0.2s;
+  }
+  .region-tab.active[data-region="us"] { background: rgba(74,158,255,0.15); color: var(--us); border-color: var(--us); }
+  .region-tab.active[data-region="ca"] { background: rgba(255,107,107,0.15); color: var(--ca); }
+  .region-tab:hover:not(.active) { color: var(--text-dim); background: var(--surface2); }
+
+  .search-box {
+    flex: 1;
+    max-width: 280px;
+    position: relative;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 10px 16px 10px 36px;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-box input::placeholder { color: var(--text-muted); }
+  .search-box input:focus { border-color: var(--gold-dim); }
+  .search-box::before {
+    content: '⌕';
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 14px;
+    pointer-events: none;
+  }
+
+  .metric-filter {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-left: auto;
+  }
+  .metric-btn {
+    padding: 7px 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 1px solid var(--border2);
+    border-radius: 3px;
+    background: transparent;
+    color: var(--text-muted);
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .metric-btn.active { background: var(--gold); color: var(--bg); border-color: var(--gold); font-weight: 500; }
+  .metric-btn:hover:not(.active) { color: var(--text-dim); border-color: var(--border); }
+
+  /* STATS STRIP */
+  .stats-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 32px;
+  }
+  .stat-cell {
+    background: var(--surface);
+    padding: 20px 20px;
+    transition: background 0.2s;
+  }
+  .stat-cell:hover { background: var(--surface2); }
+  .stat-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+  .stat-value { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; color: var(--gold); line-height: 1; }
+  .stat-sub { font-size: 10px; color: var(--text-dim); margin-top: 4px; }
+
+  /* TABLE CONTAINER */
+  .table-container {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+
+  thead { background: var(--surface2); }
+
+  th {
+    padding: 14px 16px;
+    text-align: left;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    background: var(--surface2);
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.2s;
+  }
+  th:hover { color: var(--gold); }
+  th.sorted { color: var(--gold); }
+  th .sort-indicator { margin-left: 6px; opacity: 0.5; font-size: 10px; }
+  th.sorted .sort-indicator { opacity: 1; }
+
+  th:first-child { width: 52px; text-align: center; cursor: default; }
+  th:nth-child(2) { min-width: 180px; cursor: default; }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+    animation: rowIn 0.3s ease both;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+  tbody tr:hover .bar-fill { opacity: 0.85; }
+
+  @keyframes rowIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  td {
+    padding: 14px 16px;
+    font-size: 12px;
+    vertical-align: middle;
+  }
+
+  /* Rank cell */
+  .rank {
+    text-align: center;
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text-muted);
+  }
+  tr:nth-child(1) .rank { color: var(--gold); font-size: 18px; }
+  tr:nth-child(2) .rank { color: #a8b8c8; font-size: 16px; }
+  tr:nth-child(3) .rank { color: #8a7060; font-size: 15px; }
+
+  /* Name cell */
+  .name-cell { display: flex; align-items: center; gap: 12px; }
+  .flag { font-size: 18px; line-height: 1; }
+  .name-primary { font-size: 13px; font-weight: 500; color: var(--text); letter-spacing: 0.3px; }
+  .name-secondary { font-size: 10px; color: var(--text-muted); margin-top: 1px; letter-spacing: 0.5px; }
+
+  /* Data cells with bars */
+  .data-cell {
+    position: relative;
+    min-width: 130px;
+  }
+  .bar-track {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--border);
+  }
+  .bar-fill {
+    height: 100%;
+    background: var(--gold);
+    border-radius: 0 2px 2px 0;
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+  }
+  .bar-fill.teal { background: var(--teal); }
+  .bar-fill.rose { background: var(--rose); }
+  .bar-fill.green { background: var(--green); }
+  .bar-fill.amber { background: var(--amber); }
+  .bar-fill.us { background: var(--us); }
+
+  .value-num {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .value-sub {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* Gini badge */
+  .gini-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 2px;
+    font-size: 12px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .gini-low { background: rgba(62,207,142,0.15); color: var(--green); }
+  .gini-mid { background: rgba(232,160,32,0.15); color: var(--amber); }
+  .gini-high { background: rgba(224,92,106,0.15); color: var(--rose); }
+
+  /* Life exp badge */
+  .life-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 2px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .life-high { background: rgba(62,207,142,0.15); color: var(--green); }
+  .life-mid { background: rgba(200,168,76,0.15); color: var(--gold); }
+  .life-low { background: rgba(224,92,106,0.15); color: var(--rose); }
+
+  /* LEGEND */
+  .legend {
+    display: flex;
+    gap: 24px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+  }
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* NOTES */
+  .notes {
+    margin-top: 32px;
+    padding: 20px 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    border-left: 3px solid var(--gold-dim);
+  }
+  .notes-title { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
+  .notes p { font-size: 11px; color: var(--text-dim); line-height: 1.8; margin-bottom: 8px; }
+  .notes p:last-child { margin-bottom: 0; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  .hidden { display: none !important; }
+
+  @media (max-width: 768px) {
+    .wrapper { padding: 0 16px 48px; }
+    .controls { gap: 10px; }
+    .metric-filter { display: none; }
+    td { padding: 12px 10px; }
+    th { padding: 12px 10px; }
+  }
+
+  /* Tooltip */
+  [data-tip] { position: relative; cursor: help; }
+  [data-tip]:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    padding: 6px 10px;
+    border-radius: 3px;
+    white-space: nowrap;
+    z-index: 100;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <header>
+    <div class="header-eyebrow">Analyse comparative · Amérique du Nord</div>
+    <h1>Classement <em>Économique</em><br>& Qualité de Vie</h1>
+    <p class="header-sub">
+      Comparaison des états américains et provinces canadiennes selon le PIB, le PIB par habitant,
+      les indices de distribution de la richesse et les indicateurs de bien-être social.
+    </p>
+    <div class="header-meta">
+      <div class="meta-item">Données · <span>2022–2024</span></div>
+      <div class="meta-item">Sources · <span>BEA, StatCan, Census Bureau, WHO</span></div>
+      <div class="meta-item">Monnaies · <span>USD pour les USA / CAD pour le Canada</span></div>
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="region-tabs">
+      <button class="region-tab active" data-region="us" onclick="switchRegion('us')">🇺🇸 États-Unis</button>
+      <button class="region-tab" data-region="ca" onclick="switchRegion('ca')">🇨🇦 Canada</button>
+    </div>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Rechercher..." oninput="filterTable()">
+    </div>
+    <div class="metric-filter">
+      <button class="metric-btn active" data-col="gdp" onclick="highlightMetric(this,'gdp')">PIB</button>
+      <button class="metric-btn" data-col="gdppc" onclick="highlightMetric(this,'gdppc')">PIB/hab.</button>
+      <button class="metric-btn" data-col="gini" onclick="highlightMetric(this,'gini')">Gini</button>
+      <button class="metric-btn" data-col="median" onclick="highlightMetric(this,'median')">Revenu Médian</button>
+      <button class="metric-btn" data-col="poverty" onclick="highlightMetric(this,'poverty')">Pauvreté</button>
+      <button class="metric-btn" data-col="life" onclick="highlightMetric(this,'life')">Espér. de Vie</button>
+    </div>
+  </div>
+
+  <!-- Stats strip -->
+  <div class="stats-strip" id="statsStrip"></div>
+
+  <!-- Table -->
+  <div class="table-container">
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Région</th>
+          <th onclick="sortTable('gdp')" id="th-gdp">PIB total <span class="sort-indicator">↕</span></th>
+          <th onclick="sortTable('gdppc')" id="th-gdppc">PIB / habitant <span class="sort-indicator">↕</span></th>
+          <th onclick="sortTable('gini')" id="th-gini" data-tip="0 = égalité parfaite · 1 = inégalité totale">Indice de Gini <span class="sort-indicator">↕</span></th>
+          <th onclick="sortTable('median')" id="th-median">Revenu Médian <span class="sort-indicator">↕</span></th>
+          <th onclick="sortTable('poverty')" id="th-poverty">Taux de Pauvreté <span class="sort-indicator">↕</span></th>
+          <th onclick="sortTable('life')" id="th-life">Espér. de Vie <span class="sort-indicator">↕</span></th>
+          <th onclick="sortTable('unemp')" id="th-unemp">Chômage <span class="sort-indicator">↕</span></th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Valeur favorable</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>Valeur intermédiaire</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--rose)"></div>Valeur défavorable</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--gold)"></div>Indicateur mis en avant</div>
+  </div>
+
+  <div class="notes">
+    <div class="notes-title">Notes méthodologiques</div>
+    <p>Les données PIB pour les États américains sont exprimées en milliards USD (source: Bureau of Economic Analysis, 2023). Les données canadiennes sont en milliards CAD (source: Statistique Canada, 2022–2023).</p>
+    <p>L'indice de Gini mesure l'inégalité des revenus : une valeur plus basse indique une distribution plus égalitaire. Les données US proviennent du Census Bureau (2022) ; les données canadiennes de Statistique Canada.</p>
+    <p>L'espérance de vie est basée sur les données de l'OMS et des agences nationales de santé (2021–2023). Le taux de pauvreté utilise les seuils officiels de chaque pays respectif.</p>
+  </div>
+
+</div>
+
+<script>
+// =====================================================================
+// DATA
+// =====================================================================
+
+const US_STATES = [
+  { name: "Californie", abbr: "CA", flag: "🌴", pop: 39538223, gdp: 3888, gdppc: 98264, gini: 0.474, median: 84097, poverty: 11.6, life: 79.2, unemp: 4.2 },
+  { name: "Texas", abbr: "TX", flag: "⭐", pop: 29145505, gdp: 2355, gdppc: 80831, gini: 0.469, median: 66963, poverty: 14.2, life: 77.5, unemp: 3.7 },
+  { name: "New York", abbr: "NY", flag: "🗽", pop: 20201249, gdp: 2053, gdppc: 101624, gini: 0.513, median: 72108, poverty: 12.5, life: 79.8, unemp: 4.5 },
+  { name: "Floride", abbr: "FL", flag: "🌊", pop: 21538187, gdp: 1389, gdppc: 64486, gini: 0.477, median: 59227, poverty: 12.7, life: 78.9, unemp: 3.2 },
+  { name: "Illinois", abbr: "IL", flag: "🌾", pop: 12812508, gdp: 1028, gdppc: 80237, gini: 0.461, median: 72205, poverty: 11.2, life: 77.6, unemp: 4.6 },
+  { name: "Pennsylvanie", abbr: "PA", flag: "🔔", pop: 13002700, gdp: 913, gdppc: 70218, gini: 0.451, median: 63463, poverty: 11.8, life: 77.8, unemp: 3.6 },
+  { name: "Washington", abbr: "WA", flag: "🌲", pop: 7705281, gdp: 838, gdppc: 108762, gini: 0.448, median: 82400, poverty: 9.7, life: 80.1, unemp: 3.9 },
+  { name: "Ohio", abbr: "OH", flag: "🌻", pop: 11799448, gdp: 813, gdppc: 68902, gini: 0.445, median: 62689, poverty: 12.9, life: 75.9, unemp: 3.8 },
+  { name: "New Jersey", abbr: "NJ", flag: "🏙️", pop: 9288994, gdp: 792, gdppc: 85271, gini: 0.457, median: 89703, poverty: 9.2, life: 79.5, unemp: 3.9 },
+  { name: "Géorgie", abbr: "GA", flag: "🍑", pop: 10711908, gdp: 756, gdppc: 70576, gini: 0.463, median: 61224, poverty: 13.5, life: 76.3, unemp: 3.2 },
+  { name: "Massachusetts", abbr: "MA", flag: "🦞", pop: 7029917, gdp: 692, gdppc: 98444, gini: 0.472, median: 89645, poverty: 9.2, life: 80.6, unemp: 3.6 },
+  { name: "Caroline du Nord", abbr: "NC", flag: "🌿", pop: 10439388, gdp: 697, gdppc: 66772, gini: 0.453, median: 57341, poverty: 13.9, life: 76.5, unemp: 3.4 },
+  { name: "Virginie", abbr: "VA", flag: "🏛️", pop: 8631393, gdp: 668, gdppc: 77382, gini: 0.453, median: 80963, poverty: 9.3, life: 78.4, unemp: 3.0 },
+  { name: "Michigan", abbr: "MI", flag: "🚗", pop: 10077331, gdp: 607, gdppc: 60232, gini: 0.453, median: 59584, poverty: 13.4, life: 76.6, unemp: 3.8 },
+  { name: "Maryland", abbr: "MD", flag: "🦀", pop: 6177224, gdp: 477, gdppc: 77271, gini: 0.448, median: 94384, poverty: 8.3, life: 78.7, unemp: 3.3 },
+  { name: "Colorado", abbr: "CO", flag: "⛰️", pop: 5773714, gdp: 513, gdppc: 88862, gini: 0.455, median: 77127, poverty: 9.4, life: 80.4, unemp: 3.3 },
+  { name: "Tennessee", abbr: "TN", flag: "🎸", pop: 6910840, gdp: 476, gdppc: 68880, gini: 0.459, median: 54833, poverty: 14.8, life: 75.4, unemp: 3.2 },
+  { name: "Arizona", abbr: "AZ", flag: "🌵", pop: 7151502, gdp: 467, gdppc: 65302, gini: 0.455, median: 61529, poverty: 12.9, life: 77.9, unemp: 3.6 },
+  { name: "Indiana", abbr: "IN", flag: "🏎️", pop: 6785528, gdp: 467, gdppc: 68826, gini: 0.434, median: 58235, poverty: 11.7, life: 76.1, unemp: 3.1 },
+  { name: "Minnesota", abbr: "MN", flag: "🌊", pop: 5706494, gdp: 467, gdppc: 81845, gini: 0.438, median: 80441, poverty: 8.5, life: 80.8, unemp: 3.2 },
+  { name: "Wisconsin", abbr: "WI", flag: "🧀", pop: 5893718, gdp: 392, gdppc: 66504, gini: 0.430, median: 65757, poverty: 10.5, life: 79.1, unemp: 2.8 },
+  { name: "Missouri", abbr: "MO", flag: "🌉", pop: 6154913, gdp: 393, gdppc: 63857, gini: 0.454, median: 57290, poverty: 12.8, life: 76.1, unemp: 2.9 },
+  { name: "Connecticut", abbr: "CT", flag: "⚓", pop: 3605944, gdp: 350, gdppc: 97067, gini: 0.497, median: 83771, poverty: 9.6, life: 80.2, unemp: 3.8 },
+  { name: "Oregon", abbr: "OR", flag: "🌲", pop: 4237256, gdp: 304, gdppc: 71779, gini: 0.455, median: 70084, poverty: 10.7, life: 79.0, unemp: 3.8 },
+  { name: "Caroline du Sud", abbr: "SC", flag: "🌴", pop: 5118425, gdp: 296, gdppc: 57843, gini: 0.458, median: 55564, poverty: 15.4, life: 76.2, unemp: 3.0 },
+  { name: "Utah", abbr: "UT", flag: "🏜️", pop: 3271616, gdp: 258, gdppc: 78868, gini: 0.406, median: 79133, poverty: 8.1, life: 80.7, unemp: 2.6 },
+  { name: "Alabama", abbr: "AL", flag: "🌺", pop: 5024279, gdp: 279, gdppc: 55544, gini: 0.464, median: 52035, poverty: 16.0, life: 74.2, unemp: 2.9 },
+  { name: "Louisiane", abbr: "LA", flag: "🎺", pop: 4657757, gdp: 275, gdppc: 59048, gini: 0.479, median: 50800, poverty: 18.6, life: 73.1, unemp: 3.7 },
+  { name: "Kentucky", abbr: "KY", flag: "🐎", pop: 4505836, gdp: 272, gdppc: 60364, gini: 0.460, median: 52238, poverty: 16.1, life: 74.6, unemp: 3.7 },
+  { name: "Oklahoma", abbr: "OK", flag: "🌾", pop: 3959353, gdp: 268, gdppc: 67692, gini: 0.456, median: 54449, poverty: 14.9, life: 75.2, unemp: 3.1 },
+  { name: "Iowa", abbr: "IA", flag: "🌽", pop: 3190369, gdp: 248, gdppc: 77742, gini: 0.415, median: 65429, poverty: 10.4, life: 79.6, unemp: 2.5 },
+  { name: "Nevada", abbr: "NV", flag: "🎲", pop: 3104614, gdp: 231, gdppc: 74407, gini: 0.448, median: 63276, poverty: 12.3, life: 76.5, unemp: 4.8 },
+  { name: "Kansas", abbr: "KS", flag: "🌻", pop: 2937880, gdp: 222, gdppc: 75581, gini: 0.441, median: 61091, poverty: 11.2, life: 78.2, unemp: 2.7 },
+  { name: "Mississippi", abbr: "MS", flag: "🐊", pop: 2961279, gdp: 125, gdppc: 42205, gini: 0.467, median: 46637, poverty: 18.8, life: 71.9, unemp: 3.8 },
+  { name: "Arkansas", abbr: "AR", flag: "💎", pop: 3011524, gdp: 168, gdppc: 55791, gini: 0.454, median: 50540, poverty: 16.9, life: 74.6, unemp: 2.9 },
+  { name: "Nebraska", abbr: "NE", flag: "🌾", pop: 1961504, gdp: 170, gdppc: 86669, gini: 0.426, median: 66644, poverty: 9.9, life: 80.1, unemp: 2.1 },
+  { name: "Nouveau-Mexique", abbr: "NM", flag: "☀️", pop: 2117522, gdp: 121, gdppc: 57143, gini: 0.455, median: 49754, poverty: 18.2, life: 73.5, unemp: 4.2 },
+  { name: "Idaho", abbr: "ID", flag: "🥔", pop: 1839106, gdp: 111, gdppc: 60357, gini: 0.420, median: 61004, poverty: 9.8, life: 79.0, unemp: 2.7 },
+  { name: "Virginie-Occidentale", abbr: "WV", flag: "⛏️", pop: 1793716, gdp: 102, gdppc: 56860, gini: 0.452, median: 46711, poverty: 17.1, life: 72.8, unemp: 4.2 },
+  { name: "Hawaii", abbr: "HI", flag: "🌺", pop: 1455271, gdp: 99, gdppc: 68000, gini: 0.442, median: 83173, poverty: 8.3, life: 81.6, unemp: 3.0 },
+  { name: "New Hampshire", abbr: "NH", flag: "🍂", pop: 1377529, gdp: 107, gdppc: 77699, gini: 0.423, median: 90845, poverty: 6.3, life: 80.9, unemp: 2.2 },
+  { name: "Maine", abbr: "ME", flag: "🦞", pop: 1362359, gdp: 89, gdppc: 65333, gini: 0.427, median: 62009, poverty: 10.6, life: 79.3, unemp: 2.7 },
+  { name: "Rhode Island", abbr: "RI", flag: "⚓", pop: 1097379, gdp: 79, gdppc: 72003, gini: 0.461, median: 70305, poverty: 10.1, life: 79.3, unemp: 3.7 },
+  { name: "Delaware", abbr: "DE", flag: "🏛️", pop: 989948, gdp: 89, gdppc: 89903, gini: 0.438, median: 72724, poverty: 10.0, life: 78.2, unemp: 3.6 },
+  { name: "Montana", abbr: "MT", flag: "🦌", pop: 1084225, gdp: 72, gdppc: 66419, gini: 0.437, median: 57153, poverty: 12.1, life: 78.1, unemp: 2.8 },
+  { name: "Dakota du Sud", abbr: "SD", flag: "🦅", pop: 886667, gdp: 68, gdppc: 76670, gini: 0.428, median: 62012, poverty: 11.0, life: 79.0, unemp: 2.2 },
+  { name: "Dakota du Nord", abbr: "ND", flag: "🌾", pop: 779094, gdp: 74, gdppc: 94985, gini: 0.422, median: 64894, poverty: 9.9, life: 79.6, unemp: 2.0 },
+  { name: "Alaska", abbr: "AK", flag: "🐻", pop: 733391, gdp: 66, gdppc: 90011, gini: 0.408, median: 77640, poverty: 10.3, life: 75.5, unemp: 4.0 },
+  { name: "Vermont", abbr: "VT", flag: "🍁", pop: 643077, gdp: 44, gdppc: 68427, gini: 0.436, median: 66430, poverty: 9.5, life: 80.5, unemp: 2.2 },
+  { name: "Wyoming", abbr: "WY", flag: "🐃", pop: 576851, gdp: 52, gdppc: 90129, gini: 0.435, median: 65562, poverty: 9.9, life: 77.6, unemp: 3.1 },
+];
+
+const CA_PROVINCES = [
+  { name: "Ontario", abbr: "ON", flag: "🏙️", pop: 14826276, gdp: 1022, gdppc: 68936, gini: 0.440, median: 68000, poverty: 12.3, life: 82.3, unemp: 4.8 },
+  { name: "Québec", abbr: "QC", flag: "⚜️", pop: 8785944, gdp: 561, gdppc: 63861, gini: 0.317, median: 57000, poverty: 9.9, life: 83.0, unemp: 3.9 },
+  { name: "Alberta", abbr: "AB", flag: "🛢️", pop: 4647178, gdp: 481, gdppc: 103490, gini: 0.446, median: 84000, poverty: 9.2, life: 82.1, unemp: 5.2 },
+  { name: "Colombie-Britannique", abbr: "BC", flag: "🏔️", pop: 5365088, gdp: 451, gdppc: 84070, gini: 0.445, median: 68000, poverty: 11.8, life: 83.7, unemp: 4.3 },
+  { name: "Saskatchewan", abbr: "SK", flag: "🌾", pop: 1194803, gdp: 102, gdppc: 85395, gini: 0.430, median: 72000, poverty: 12.2, life: 80.4, unemp: 4.5 },
+  { name: "Manitoba", abbr: "MB", flag: "🦬", pop: 1431792, gdp: 91, gdppc: 63554, gini: 0.430, median: 62000, poverty: 13.8, life: 79.9, unemp: 4.0 },
+  { name: "Nouvelle-Écosse", abbr: "NS", flag: "🦞", pop: 1047232, gdp: 56, gdppc: 53476, gini: 0.410, median: 55000, poverty: 13.5, life: 80.2, unemp: 7.3 },
+  { name: "Nouveau-Brunswick", abbr: "NB", flag: "🌲", pop: 831618, gdp: 46, gdppc: 55318, gini: 0.397, median: 52000, poverty: 11.6, life: 80.8, unemp: 7.0 },
+  { name: "Terre-Neuve-et-Labrador", abbr: "NL", flag: "🐟", pop: 531948, gdp: 41, gdppc: 77066, gini: 0.402, median: 62000, poverty: 13.6, life: 79.1, unemp: 10.9 },
+  { name: "Île-du-Prince-Édouard", abbr: "PE", flag: "🥔", pop: 177032, gdp: 10, gdppc: 56490, gini: 0.388, median: 52000, poverty: 12.5, life: 82.1, unemp: 8.1 },
+  { name: "Yukon", abbr: "YT", flag: "🐺", pop: 45002, gdp: 4.4, gdppc: 97773, gini: 0.370, median: 88000, poverty: 7.1, life: 77.6, unemp: 5.5 },
+  { name: "Territoires du Nord-Ouest", abbr: "NT", flag: "❄️", pop: 45561, gdp: 5.2, gdppc: 114137, gini: 0.395, median: 95000, poverty: 6.8, life: 76.0, unemp: 7.3 },
+  { name: "Nunavut", abbr: "NU", flag: "🐻‍❄️", pop: 39285, gdp: 3.1, gdppc: 78915, gini: 0.422, median: 55000, poverty: 18.3, life: 70.2, unemp: 14.4 },
+];
+
+// =====================================================================
+// STATE
+// =====================================================================
+let currentRegion = 'us';
+let sortKey = 'gdp';
+let sortDir = 'desc';
+let searchText = '';
+
+function getData() {
+  return currentRegion === 'us' ? US_STATES : CA_PROVINCES;
+}
+
+function getCurrency() {
+  return currentRegion === 'us' ? 'USD' : 'CAD';
+}
+
+// =====================================================================
+// RENDER
+// =====================================================================
+function formatNum(n, decimals = 0) {
+  return n.toLocaleString('fr-FR', { maximumFractionDigits: decimals });
+}
+
+function formatGDP(v) {
+  if (v >= 1000) return (v/1000).toFixed(2) + ' T';
+  return formatNum(v) + ' G';
+}
+
+function getGiniClass(v) {
+  if (v < 0.40) return 'gini-low';
+  if (v < 0.46) return 'gini-mid';
+  return 'gini-high';
+}
+
+function getLifeClass(v) {
+  if (v >= 80) return 'life-high';
+  if (v >= 77) return 'life-mid';
+  return 'life-low';
+}
+
+function getPovertyColor(v) {
+  if (v <= 10) return 'var(--green)';
+  if (v <= 14) return 'var(--amber)';
+  return 'var(--rose)';
+}
+
+function getUnempColor(v) {
+  if (v <= 3) return 'var(--green)';
+  if (v <= 5) return 'var(--amber)';
+  return 'var(--rose)';
+}
+
+function renderStats(data) {
+  const totalGdp = data.reduce((s,d) => s+d.gdp, 0);
+  const avgGdppc = data.reduce((s,d) => s+d.gdppc, 0) / data.length;
+  const avgGini = data.reduce((s,d) => s+d.gini, 0) / data.length;
+  const avgLife = data.reduce((s,d) => s+d.life, 0) / data.length;
+  const minGini = data.reduce((p,c) => p.gini < c.gini ? p : c);
+  const maxGdp = data.reduce((p,c) => p.gdp > c.gdp ? p : c);
+  const cur = getCurrency();
+
+  document.getElementById('statsStrip').innerHTML = `
+    <div class="stat-cell">
+      <div class="stat-label">PIB Total Cumulé</div>
+      <div class="stat-value">${formatGDP(totalGdp)}</div>
+      <div class="stat-sub">${cur}</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-label">PIB/Hab. Moyen</div>
+      <div class="stat-value">${formatNum(Math.round(avgGdppc/1000))}k</div>
+      <div class="stat-sub">${cur} par an</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-label">Gini Moyen</div>
+      <div class="stat-value">${avgGini.toFixed(3)}</div>
+      <div class="stat-sub">inégalité des revenus</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-label">Meilleur Gini</div>
+      <div class="stat-value">${minGini.gini.toFixed(3)}</div>
+      <div class="stat-sub">${minGini.name}</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-label">Espér. de Vie Moy.</div>
+      <div class="stat-value">${avgLife.toFixed(1)}</div>
+      <div class="stat-sub">années</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-label">+ Grand PIB</div>
+      <div class="stat-value">${formatGDP(maxGdp.gdp)}</div>
+      <div class="stat-sub">${maxGdp.name}</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-label">Régions classées</div>
+      <div class="stat-value">${data.length}</div>
+      <div class="stat-sub">${currentRegion === 'us' ? 'états américains' : 'provinces canadiennes'}</div>
+    </div>
+  `;
+}
+
+function renderTable() {
+  const data = getData();
+  const cur = getCurrency();
+
+  // Filter
+  const filtered = data.filter(d => {
+    if (!searchText) return true;
+    return d.name.toLowerCase().includes(searchText.toLowerCase()) ||
+           d.abbr.toLowerCase().includes(searchText.toLowerCase());
+  });
+
+  // Sort
+  filtered.sort((a, b) => {
+    const mul = sortDir === 'desc' ? -1 : 1;
+    if (sortKey === 'gini' || sortKey === 'poverty' || sortKey === 'unemp') {
+      return mul * (a[sortKey] - b[sortKey]) * -1; // lower is better, so invert
+    }
+    return mul * (a[sortKey] - b[sortKey]);
+  });
+
+  // Max values for bars
+  const maxGdp = Math.max(...data.map(d => d.gdp));
+  const maxGdppc = Math.max(...data.map(d => d.gdppc));
+  const maxGini = Math.max(...data.map(d => d.gini));
+  const maxMedian = Math.max(...data.map(d => d.median));
+  const maxPoverty = Math.max(...data.map(d => d.poverty));
+  const maxLife = Math.max(...data.map(d => d.life));
+  const maxUnemp = Math.max(...data.map(d => d.unemp));
+
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = filtered.map((d, i) => {
+    const gdpBar = (d.gdp / maxGdp * 100).toFixed(1);
+    const gdppcBar = (d.gdppc / maxGdppc * 100).toFixed(1);
+    const giniBar = (d.gini / maxGini * 100).toFixed(1);
+    const medianBar = (d.median / maxMedian * 100).toFixed(1);
+    const povertyBar = (d.poverty / maxPoverty * 100).toFixed(1);
+    const lifeBar = (d.life / maxLife * 100).toFixed(1);
+    const unempBar = (d.unemp / maxUnemp * 100).toFixed(1);
+    const povertyColor = getPovertyColor(d.poverty);
+    const unempColor = getUnempColor(d.unemp);
+
+    return `
+    <tr>
+      <td class="rank">${i + 1}</td>
+      <td>
+        <div class="name-cell">
+          <span class="flag">${d.flag}</span>
+          <div>
+            <div class="name-primary">${d.name}</div>
+            <div class="name-secondary">${d.abbr} · ${formatNum(d.pop)} hab.</div>
+          </div>
+        </div>
+      </td>
+      <td class="data-cell">
+        <div class="value-num">${formatGDP(d.gdp)}</div>
+        <div class="value-sub">${cur}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${gdpBar}%"></div></div>
+      </td>
+      <td class="data-cell">
+        <div class="value-num">${formatNum(d.gdppc)} $</div>
+        <div class="value-sub">${cur} / an</div>
+        <div class="bar-track"><div class="bar-fill teal" style="width:${gdppcBar}%"></div></div>
+      </td>
+      <td class="data-cell">
+        <span class="gini-badge ${getGiniClass(d.gini)}" data-tip="Inégalité des revenus">${d.gini.toFixed(3)}</span>
+        <div class="bar-track"><div class="bar-fill rose" style="width:${giniBar}%"></div></div>
+      </td>
+      <td class="data-cell">
+        <div class="value-num">${formatNum(d.median)} $</div>
+        <div class="value-sub">revenu médian</div>
+        <div class="bar-track"><div class="bar-fill green" style="width:${medianBar}%"></div></div>
+      </td>
+      <td class="data-cell">
+        <div class="value-num" style="color:${povertyColor}">${d.poverty.toFixed(1)} %</div>
+        <div class="value-sub">taux de pauvreté</div>
+        <div class="bar-track"><div class="bar-fill rose" style="width:${povertyBar}%; background:${povertyColor}"></div></div>
+      </td>
+      <td class="data-cell">
+        <span class="life-badge ${getLifeClass(d.life)}">${d.life.toFixed(1)} ans</span>
+        <div class="bar-track"><div class="bar-fill amber" style="width:${lifeBar}%"></div></div>
+      </td>
+      <td class="data-cell">
+        <div class="value-num" style="color:${unempColor}">${d.unemp.toFixed(1)} %</div>
+        <div class="value-sub">chômage</div>
+        <div class="bar-track"><div class="bar-fill us" style="width:${unempBar}%; background:${unempColor}"></div></div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // Update sort headers
+  document.querySelectorAll('th[id]').forEach(th => {
+    const col = th.id.replace('th-','');
+    th.classList.toggle('sorted', col === sortKey);
+    const indicator = th.querySelector('.sort-indicator');
+    if (col === sortKey) {
+      indicator.textContent = sortDir === 'desc' ? '↓' : '↑';
+    } else {
+      indicator.textContent = '↕';
+    }
+  });
+
+  renderStats(data);
+}
+
+// =====================================================================
+// INTERACTIONS
+// =====================================================================
+function switchRegion(r) {
+  currentRegion = r;
+  sortKey = 'gdp';
+  sortDir = 'desc';
+  document.getElementById('searchInput').value = '';
+  searchText = '';
+  document.querySelectorAll('.region-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.region === r);
+  });
+  renderTable();
+}
+
+function sortTable(key) {
+  if (sortKey === key) {
+    sortDir = sortDir === 'desc' ? 'asc' : 'desc';
+  } else {
+    sortKey = key;
+    // For "bad" metrics, default sort ascending (best = lowest)
+    sortDir = ['gini','poverty','unemp'].includes(key) ? 'asc' : 'desc';
+  }
+  renderTable();
+}
+
+function filterTable() {
+  searchText = document.getElementById('searchInput').value;
+  renderTable();
+}
+
+function highlightMetric(btn, col) {
+  document.querySelectorAll('.metric-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  sortTable(col);
+}
+
+// Initial render
+renderTable();
+</script>
+</body>
+</html>
