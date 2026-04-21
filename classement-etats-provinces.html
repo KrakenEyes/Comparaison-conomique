@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Classement Économique — Amérique du Nord · Europe · Océanie</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07090d;
+  --s1: #0c1018;
+  --s2: #111620;
+  --s3: #161d2a;
+  --b1: #1a2235;
+  --b2: #243048;
+  --gold: #c9a84c;
+  --gold2: #e8c96a;
+  --gold-dim: #7a5e28;
+  --teal: #22d4d4;
+  --rose: #e05c6a;
+  --green: #3ecf8e;
+  --amber: #e8a020;
+  --blue: #4a9eff;
+  --violet: #9b7eff;
+  --text: #dce8f5;
+  --dim: #6e899e;
+  --muted: #2f4559;
+  --us: #4a9eff;
+  --ca: #ff7878;
+  --eu: #9b7eff;
+  --au: #3ecf8e;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'IBM Plex Mono', monospace;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image: linear-gradient(var(--b1) 1px, transparent 1px), linear-gradient(90deg, var(--b1) 1px, transparent 1px);
+  background-size: 56px 56px;
+  opacity: 0.25;
+  pointer-events:none; z-index:0;
+}
+
+/* ── LAYOUT ── */
+.wrap { position:relative; z-index:1; max-width:1600px; margin:0 auto; padding:0 28px 72px; }
+
+/* ── HEADER ── */
+header { padding: 52px 0 36px; border-bottom: 1px solid var(--b1); margin-bottom: 32px; }
+.eyebrow {
+  font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--gold);
+  display:flex; align-items:center; gap:12px; margin-bottom:14px;
+}
+.eyebrow::before { content:''; display:block; width:28px; height:1px; background:var(--gold); }
+h1 {
+  font-family:'Playfair Display', serif;
+  font-size: clamp(32px,4.5vw,66px);
+  font-weight:900; line-height:1.02; letter-spacing:-2px; color:var(--text);
+}
+h1 em { font-style:italic; color:var(--gold); }
+.header-desc { margin-top:14px; font-size:11px; color:var(--dim); line-height:1.9; max-width:640px; letter-spacing:.4px; }
+.header-meta { display:flex; gap:24px; flex-wrap:wrap; margin-top:18px; }
+.meta-pill {
+  font-size:10px; color:var(--muted); letter-spacing:.8px;
+  border:1px solid var(--b1); border-radius:3px; padding:4px 10px;
+}
+.meta-pill span { color:var(--dim); }
+
+/* ── CONTROLS ── */
+.controls { display:flex; align-items:flex-start; gap:14px; margin-bottom:20px; flex-wrap:wrap; }
+
+/* Region toggles */
+.region-group { display:flex; flex-direction:column; gap:6px; }
+.region-label { font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); }
+.region-toggles { display:flex; gap:6px; flex-wrap:wrap; }
+.rtog {
+  display:flex; align-items:center; gap:8px;
+  padding:9px 16px;
+  border-radius:4px;
+  border:1px solid var(--b2);
+  background:var(--s1);
+  color:var(--dim);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px; letter-spacing:1px;
+  cursor:pointer; transition:all .18s;
+  white-space:nowrap;
+}
+.rtog:hover:not(.active) { border-color:var(--b2); color:var(--text); background:var(--s2); }
+.rtog.active[data-r="us"]  { background:rgba(74,158,255,.12); color:var(--us);  border-color:var(--us);  }
+.rtog.active[data-r="ca"]  { background:rgba(255,120,120,.12); color:var(--ca);  border-color:var(--ca);  }
+.rtog.active[data-r="eu"]  { background:rgba(155,126,255,.12); color:var(--eu);  border-color:var(--eu);  }
+.rtog.active[data-r="au"]  { background:rgba(62,207,142,.12);  color:var(--au);  border-color:var(--au);  }
+.rtog-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.rtog.active[data-r="us"]  .rtog-dot { background:var(--us); }
+.rtog.active[data-r="ca"]  .rtog-dot { background:var(--ca); }
+.rtog.active[data-r="eu"]  .rtog-dot { background:var(--eu); }
+.rtog.active[data-r="au"]  .rtog-dot { background:var(--au); }
+.rtog:not(.active) .rtog-dot { background:var(--muted); }
+.rtog-count {
+  margin-left:4px; padding:1px 6px;
+  background:var(--bg); border-radius:10px;
+  font-size:9px; opacity:.7;
+}
+
+/* Search + col toggle */
+.ctrl-right { margin-left:auto; display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap; }
+.search-wrap { position:relative; }
+.search-wrap input {
+  width:230px; padding:9px 14px 9px 34px;
+  background:var(--s1); border:1px solid var(--b2); border-radius:4px;
+  color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:11px;
+  letter-spacing:.8px; outline:none; transition:border-color .2s;
+}
+.search-wrap input::placeholder { color:var(--muted); }
+.search-wrap input:focus { border-color:var(--gold-dim); }
+.search-wrap::before {
+  content:'⌕'; position:absolute; left:11px; top:50%; transform:translateY(-50%);
+  color:var(--dim); font-size:15px; pointer-events:none;
+}
+.col-toggle-btn {
+  padding:9px 16px;
+  background:var(--s1); border:1px solid var(--b2); border-radius:4px;
+  color:var(--dim); font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:1.5px;
+  text-transform:uppercase; cursor:pointer; transition:all .18s; white-space:nowrap;
+}
+.col-toggle-btn:hover { color:var(--text); border-color:var(--b2); background:var(--s2); }
+.col-toggle-btn.open { color:var(--gold); border-color:var(--gold-dim); }
+
+/* Column selector panel */
+.col-panel {
+  position:absolute; top:calc(100% + 8px); right:0;
+  background:var(--s2); border:1px solid var(--b2); border-radius:6px;
+  padding:16px; z-index:100; min-width:320px;
+  display:none; flex-direction:column; gap:6px;
+  box-shadow: 0 16px 48px rgba(0,0,0,.6);
+}
+.col-panel.open { display:flex; }
+.col-panel-title { font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); margin-bottom:6px; }
+.col-groups { display:grid; grid-template-columns:1fr 1fr; gap:4px; }
+.col-check {
+  display:flex; align-items:center; gap:8px;
+  padding:7px 10px; border-radius:3px; cursor:pointer;
+  font-size:10px; letter-spacing:.8px; color:var(--dim);
+  transition:background .15s;
+  user-select:none;
+}
+.col-check:hover { background:var(--s3); color:var(--text); }
+.col-check input[type=checkbox] { accent-color:var(--gold); cursor:pointer; }
+.col-check.checked { color:var(--text); }
+.col-panel-actions { display:flex; gap:8px; margin-top:6px; border-top:1px solid var(--b1); padding-top:10px; }
+.col-action-btn {
+  padding:5px 12px; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:1.5px;
+  text-transform:uppercase; cursor:pointer; border-radius:3px; border:1px solid var(--b2);
+  background:transparent; color:var(--dim); transition:all .15s;
+}
+.col-action-btn:hover { color:var(--text); border-color:var(--b2); background:var(--s3); }
+
+/* ── SORT BUTTONS ── */
+.sort-bar { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:20px; align-items:center; }
+.sort-label { font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-right:4px; }
+.sbtn {
+  padding:6px 13px;
+  background:transparent; border:1px solid var(--b1); border-radius:3px;
+  color:var(--muted); font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:1.5px;
+  text-transform:uppercase; cursor:pointer; transition:all .15s; white-space:nowrap;
+}
+.sbtn:hover { color:var(--dim); border-color:var(--b2); }
+.sbtn.active { background:var(--gold); color:var(--bg); border-color:var(--gold); font-weight:600; }
+
+/* ── STATS STRIP ── */
+.stats-strip {
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr));
+  gap:1px; background:var(--b1); border:1px solid var(--b1); border-radius:6px;
+  overflow:hidden; margin-bottom:24px;
+}
+.sc {
+  background:var(--s1); padding:18px 18px 14px;
+  transition:background .2s;
+}
+.sc:hover { background:var(--s2); }
+.sc-label { font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+.sc-val {
+  font-family:'Playfair Display',serif; font-size:24px; font-weight:700;
+  color:var(--gold); line-height:1;
+}
+.sc-sub { font-size:10px; color:var(--dim); margin-top:3px; }
+
+/* ── TABLE WRAPPER ── */
+.table-outer {
+  border:1px solid var(--b1); border-radius:6px; overflow:hidden;
+  position:relative;
+}
+/* scroll shadow hints */
+.table-outer::after {
+  content:'';
+  position:absolute; top:0; right:0; bottom:0;
+  width:60px;
+  background: linear-gradient(to right, transparent, var(--bg));
+  pointer-events:none; z-index:10;
+  border-radius:0 6px 6px 0;
+}
+.table-scroll {
+  overflow-x:auto;
+  overflow-y:visible;
+}
+.table-scroll::-webkit-scrollbar { height:7px; }
+.table-scroll::-webkit-scrollbar-track { background:var(--s1); }
+.table-scroll::-webkit-scrollbar-thumb { background:var(--b2); border-radius:4px; }
+
+table { width:max-content; min-width:100%; border-collapse:collapse; }
+
+/* ── STICKY COLUMNS ── */
+th:nth-child(1), td:nth-child(1) {
+  position:sticky; left:0; z-index:3;
+  background:var(--s2); /* overridden for cells */
+}
+th:nth-child(2), td:nth-child(2) {
+  position:sticky; left:52px; z-index:3;
+  background:var(--s2);
+}
+thead th:nth-child(1), thead th:nth-child(2) { background:var(--s3); z-index:4; }
+tbody tr:hover td:nth-child(1),
+tbody tr:hover td:nth-child(2) { background:var(--s3); }
+
+/* ── TH ── */
+thead { background:var(--s3); }
+th {
+  padding:13px 14px; text-align:left;
+  font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--muted);
+  border-bottom:1px solid var(--b1); white-space:nowrap;
+  cursor:pointer; user-select:none; transition:color .2s;
+  background:var(--s3);
+}
+th:hover { color:var(--gold); }
+th.sorted { color:var(--gold); }
+th:first-child { width:50px; cursor:default; text-align:center; }
+th:nth-child(2) { min-width:200px; cursor:default; }
+th .si { margin-left:5px; opacity:.4; font-size:10px; }
+th.sorted .si { opacity:1; }
+
+/* column group headers */
+th.col-group-header {
+  border-bottom:2px solid var(--b2);
+  font-size:8px; letter-spacing:3px; cursor:default;
+}
+th.col-group-header:hover { color:var(--muted); }
+
+/* ── TD ── */
+tbody tr {
+  border-bottom:1px solid var(--b1);
+  transition:background .12s;
+  animation:rIn .25s ease both;
+}
+tbody tr:last-child { border-bottom:none; }
+tbody tr:hover { background:var(--s2); }
+@keyframes rIn { from { opacity:0; transform:translateY(3px); } to { opacity:1; transform:none; } }
+td { padding:12px 14px; font-size:12px; vertical-align:middle; background:var(--s1); }
+tbody tr:hover td { background:var(--s2); }
+
+/* rank cell */
+.rk {
+  text-align:center;
+  font-family:'Playfair Display',serif; font-weight:700;
+  font-size:14px; color:var(--muted);
+}
+tbody tr:nth-child(1) .rk { color:var(--gold); font-size:17px; }
+tbody tr:nth-child(2) .rk { color:#a0b4c8; font-size:15px; }
+tbody tr:nth-child(3) .rk { color:#8a7060; }
+
+/* name cell */
+.nc { display:flex; align-items:center; gap:11px; }
+.flag { font-size:18px; flex-shrink:0; }
+.n1 { font-size:12px; font-weight:500; color:var(--text); letter-spacing:.2px; }
+.n2 { font-size:10px; color:var(--muted); margin-top:1px; letter-spacing:.4px; }
+
+/* region dot */
+.rdot {
+  width:5px; height:5px; border-radius:50%; flex-shrink:0;
+  margin-left:auto;
+}
+.rdot-us { background:var(--us); }
+.rdot-ca { background:var(--ca); }
+.rdot-eu { background:var(--eu); }
+.rdot-au { background:var(--au); }
+
+/* data cell */
+.dc { position:relative; min-width:110px; padding-bottom:16px !important; }
+.dc .vn { font-size:12px; font-weight:500; color:var(--text); font-variant-numeric:tabular-nums; }
+.dc .vs { font-size:9px; color:var(--muted); margin-top:2px; letter-spacing:.4px; }
+.bt { position:absolute; bottom:0; left:0; right:0; height:3px; background:var(--b1); }
+.bf { height:100%; border-radius:0 2px 2px 0; transition:width .5s cubic-bezier(.4,0,.2,1); }
+
+/* badges */
+.badge {
+  display:inline-block; padding:3px 8px; border-radius:2px;
+  font-size:11px; font-weight:500; font-variant-numeric:tabular-nums;
+}
+.gini-lo { background:rgba(62,207,142,.13); color:var(--green); }
+.gini-md { background:rgba(232,160,32,.13); color:var(--amber); }
+.gini-hi { background:rgba(224,92,106,.13); color:var(--rose); }
+.life-hi { background:rgba(62,207,142,.13); color:var(--green); }
+.life-md { background:rgba(201,168,76,.13); color:var(--gold); }
+.life-lo { background:rgba(224,92,106,.13); color:var(--rose); }
+.hdi-hi  { background:rgba(62,207,142,.13); color:var(--green); }
+.hdi-md  { background:rgba(201,168,76,.13); color:var(--gold); }
+.hdi-lo  { background:rgba(224,92,106,.13); color:var(--rose); }
+
+/* ── LEGEND ── */
+.legend { display:flex; gap:20px; flex-wrap:wrap; margin-top:16px; }
+.li { display:flex; align-items:center; gap:7px; font-size:10px; color:var(--muted); }
+.ldot { width:9px; height:9px; border-radius:50%; }
+
+/* ── NOTES ── */
+.notes {
+  margin-top:28px; padding:18px 22px;
+  background:var(--s1); border:1px solid var(--b1); border-radius:6px;
+  border-left:3px solid var(--gold-dim);
+}
+.notes-t { font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); margin-bottom:10px; }
+.notes p { font-size:10px; color:var(--dim); line-height:1.9; margin-bottom:6px; }
+.notes p:last-child { margin-bottom:0; }
+
+/* ── MISC ── */
+.ctrl-wrapper { position:relative; }
+[data-tip]:hover::after {
+  content:attr(data-tip); position:absolute; bottom:calc(100% + 7px); left:50%;
+  transform:translateX(-50%); background:var(--s3); border:1px solid var(--b2);
+  color:var(--text); font-size:10px; letter-spacing:.4px; padding:5px 10px;
+  border-radius:3px; white-space:nowrap; z-index:200; pointer-events:none;
+}
+.hidden { display:none !important; }
+.no-results {
+  text-align:center; padding:48px 20px;
+  font-size:12px; color:var(--muted); letter-spacing:1px;
+}
+.scroll-hint {
+  display:flex; align-items:center; gap:8px;
+  font-size:10px; color:var(--muted); letter-spacing:1px;
+  margin-bottom:8px;
+}
+.scroll-hint span { animation: nudge 2s ease-in-out infinite; }
+@keyframes nudge { 0%,100%{transform:translateX(0)} 50%{transform:translateX(4px)} }
+
+@media (max-width:768px) {
+  .wrap { padding:0 14px 48px; }
+  .ctrl-right { margin-left:0; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Analyse comparative · Monde occidental</div>
+  <h1>Classement <em>Économique</em><br>& Qualité de Vie</h1>
+  <p class="header-desc">
+    États américains, provinces canadiennes, pays européens et régions australasiennes comparés selon
+    le PIB, la distribution des richesses, le bien-être social, l'éducation et l'environnement.
+  </p>
+  <div class="header-meta">
+    <div class="meta-pill">Données · <span>2022–2024</span></div>
+    <div class="meta-pill">Sources · <span>BEA, StatCan, Eurostat, ABS, OCDE, OMS, WEF</span></div>
+    <div class="meta-pill">Monnaies · <span>Converties en USD approx. (PPP 2023)</span></div>
+    <div class="meta-pill">Régions · <span id="totalCount">—</span></div>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="region-group">
+    <div class="region-label">Régions actives</div>
+    <div class="region-toggles">
+      <button class="rtog active" data-r="us" onclick="toggleRegion('us')">
+        <div class="rtog-dot"></div>🇺🇸 États-Unis<span class="rtog-count" id="cnt-us">50</span>
+      </button>
+      <button class="rtog active" data-r="ca" onclick="toggleRegion('ca')">
+        <div class="rtog-dot"></div>🇨🇦 Canada<span class="rtog-count" id="cnt-ca">13</span>
+      </button>
+      <button class="rtog active" data-r="eu" onclick="toggleRegion('eu')">
+        <div class="rtog-dot"></div>🌍 Europe<span class="rtog-count" id="cnt-eu">20</span>
+      </button>
+      <button class="rtog active" data-r="au" onclick="toggleRegion('au')">
+        <div class="rtog-dot"></div>🌏 Australasie<span class="rtog-count" id="cnt-au">9</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="ctrl-right">
+    <div class="search-wrap">
+      <input type="text" id="searchInput" placeholder="Rechercher une région…" oninput="renderTable()">
+    </div>
+    <div class="ctrl-wrapper">
+      <button class="col-toggle-btn" id="colBtn" onclick="toggleColPanel()">⊞ Colonnes</button>
+      <div class="col-panel" id="colPanel">
+        <div class="col-panel-title">Choisir les colonnes affichées</div>
+        <div class="col-groups" id="colChecks"></div>
+        <div class="col-panel-actions">
+          <button class="col-action-btn" onclick="setAllCols(true)">Tout afficher</button>
+          <button class="col-action-btn" onclick="setAllCols(false)">Tout masquer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sort shortcut bar -->
+<div class="sort-bar">
+  <span class="sort-label">Trier par :</span>
+  <button class="sbtn active" data-k="gdp"     onclick="quickSort(this,'gdp')"    >PIB</button>
+  <button class="sbtn"        data-k="gdppc"   onclick="quickSort(this,'gdppc')"  >PIB/hab.</button>
+  <button class="sbtn"        data-k="gini"    onclick="quickSort(this,'gini')"   >Gini</button>
+  <button class="sbtn"        data-k="median"  onclick="quickSort(this,'median')" >Rev. médian</button>
+  <button class="sbtn"        data-k="poverty" onclick="quickSort(this,'poverty')">Pauvreté</button>
+  <button class="sbtn"        data-k="life"    onclick="quickSort(this,'life')"   >Espér. vie</button>
+  <button class="sbtn"        data-k="hdi"     onclick="quickSort(this,'hdi')"    >IDH</button>
+  <button class="sbtn"        data-k="health"  onclick="quickSort(this,'health')" >Santé/hab.</button>
+  <button class="sbtn"        data-k="homicide"onclick="quickSort(this,'homicide')">Homicides</button>
+  <button class="sbtn"        data-k="top10"   onclick="quickSort(this,'top10')"  >Top 10%</button>
+  <button class="sbtn"        data-k="mob"     onclick="quickSort(this,'mob')"    >Mobilité</button>
+  <button class="sbtn"        data-k="edu"     onclick="quickSort(this,'edu')"    >Éducation</button>
+  <button class="sbtn"        data-k="co2"     onclick="quickSort(this,'co2')"    >CO₂/hab.</button>
+  <button class="sbtn"        data-k="unemp"   onclick="quickSort(this,'unemp')"  >Chômage</button>
+</div>
+
+<!-- Stats strip -->
+<div class="stats-strip" id="statsStrip"></div>
+
+<!-- Scroll hint -->
+<div class="scroll-hint">
+  <span>→</span> Faites défiler horizontalement pour voir toutes les colonnes
+</div>
+
+<!-- Table -->
+<div class="table-outer">
+  <div class="table-scroll">
+    <table id="mainTable">
+      <thead><tr id="theadRow"></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="legend">
+  <div class="li"><div class="ldot" style="background:var(--green)"></div>Valeur favorable</div>
+  <div class="li"><div class="ldot" style="background:var(--amber)"></div>Valeur intermédiaire</div>
+  <div class="li"><div class="ldot" style="background:var(--rose)"></div>Valeur défavorable</div>
+  <div class="li"><div class="ldot" style="background:var(--us)"></div>🇺🇸 États-Unis</div>
+  <div class="li"><div class="ldot" style="background:var(--ca)"></div>🇨🇦 Canada</div>
+  <div class="li"><div class="ldot" style="background:var(--eu)"></div>🌍 Europe</div>
+  <div class="li"><div class="ldot" style="background:var(--au)"></div>🌏 Australasie</div>
+</div>
+
+<div class="notes">
+  <div class="notes-t">Notes méthodologiques</div>
+  <p>Toutes les valeurs monétaires (PIB, PIB/hab., revenu médian, dépenses santé) sont converties en USD à des taux PPP approximatifs de 2023 afin de permettre des comparaisons inter-régionales équitables.</p>
+  <p>L'IDH (Indice de développement humain) est l'indice composite du PNUD intégrant la santé, l'éducation et le revenu (0–1). Les données régionales pour les sous-entités nationales (états, provinces) sont des estimations basées sur des méthodologies analogues.</p>
+  <p>L'indice de Gini mesure l'inégalité des revenus (0 = égalité parfaite, 1 = inégalité totale). La "part des 10% les plus riches" représente leur part dans le revenu national total. L'indice de mobilité sociale (0–100) est basé sur le WEF Global Social Mobility Index.</p>
+  <p>Le score d'éducation est un indice composite basé sur les résultats PISA, les taux de scolarisation tertiaire et les dépenses par élève. Le taux d'homicides est exprimé pour 100 000 habitants.</p>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+// ══════════════════════════════════════════════════════════
+// COLUMN DEFINITIONS
+// ══════════════════════════════════════════════════════════
+const COLS = [
+  { key:'gdp',     label:'PIB Total',        sub:'milliards USD',   color:'#c9a84c', dir:'desc', group:'Économique' },
+  { key:'gdppc',   label:'PIB / Habitant',   sub:'USD / an',        color:'#22d4d4', dir:'desc', group:'Économique' },
+  { key:'median',  label:'Revenu Médian',    sub:'USD / an',        color:'#3ecf8e', dir:'desc', group:'Économique' },
+  { key:'gini',    label:'Indice de Gini',   sub:'inégalité revenus',color:'#e05c6a',dir:'asc',  group:'Distribution' },
+  { key:'poverty', label:'Taux de Pauvreté', sub:'% population',    color:'#e8a020', dir:'asc',  group:'Distribution' },
+  { key:'top10',   label:'Part des 10%+',    sub:'% du rev. national',color:'#9b7eff',dir:'asc', group:'Distribution' },
+  { key:'life',    label:'Espér. de Vie',    sub:'années',          color:'#3ecf8e', dir:'desc', group:'Santé & Vie' },
+  { key:'hdi',     label:'IDH',              sub:'indice 0–1 PNUD', color:'#4a9eff', dir:'desc', group:'Santé & Vie' },
+  { key:'health',  label:'Santé / Hab.',     sub:'USD PPP / an',    color:'#22d4d4', dir:'desc', group:'Santé & Vie' },
+  { key:'unemp',   label:'Chômage',          sub:'% actifs',        color:'#e8a020', dir:'asc',  group:'Travail & Social' },
+  { key:'mob',     label:'Mobilité Sociale', sub:'score 0–100 WEF', color:'#c9a84c', dir:'desc', group:'Travail & Social' },
+  { key:'edu',     label:'Éducation',        sub:'score 0–600',     color:'#9b7eff', dir:'desc', group:'Travail & Social' },
+  { key:'homicide',label:'Homicides',        sub:'pour 100 000 hab.',color:'#e05c6a',dir:'asc',  group:'Sécurité & Env.' },
+  { key:'co2',     label:'CO₂ / Hab.',       sub:'tonnes / an',     color:'#e8a020', dir:'asc',  group:'Sécurité & Env.' },
+];
+
+// ══════════════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════════════
+
+const DATA = [];
+
+// ── US STATES ──
+const US = [
+ {n:"Californie",  a:"CA", f:"🌴", r:"us", pop:39538223, gdp:3888,gdppc:98264, gini:0.474,median:84097, poverty:11.6,life:79.2,unemp:4.2, hdi:0.931,health:6400,homicide:5.3, top10:46.2,mob:72,edu:502,co2:9.2},
+ {n:"Texas",       a:"TX", f:"⭐", r:"us", pop:29145505, gdp:2355,gdppc:80831, gini:0.469,median:66963, poverty:14.2,life:77.5,unemp:3.7, hdi:0.900,health:5900,homicide:6.5, top10:47.8,mob:68,edu:478,co2:24.4},
+ {n:"New York",    a:"NY", f:"🗽", r:"us", pop:20201249, gdp:2053,gdppc:101624,gini:0.513,median:72108, poverty:12.5,life:79.8,unemp:4.5, hdi:0.938,health:7500,homicide:4.9, top10:46.3,mob:70,edu:510,co2:7.6},
+ {n:"Floride",     a:"FL", f:"🌊", r:"us", pop:21538187, gdp:1389,gdppc:64486, gini:0.477,median:59227, poverty:12.7,life:78.9,unemp:3.2, hdi:0.904,health:6200,homicide:5.3, top10:46.0,mob:68,edu:480,co2:10.5},
+ {n:"Illinois",    a:"IL", f:"🌾", r:"us", pop:12812508, gdp:1028,gdppc:80237, gini:0.461,median:72205, poverty:11.2,life:77.6,unemp:4.6, hdi:0.921,health:6800,homicide:9.2, top10:45.4,mob:70,edu:496,co2:12.8},
+ {n:"Pennsylvanie",a:"PA", f:"🔔", r:"us", pop:13002700, gdp:913, gdppc:70218, gini:0.451,median:63463, poverty:11.8,life:77.8,unemp:3.6, hdi:0.913,health:6700,homicide:7.5, top10:43.8,mob:71,edu:500,co2:15.1},
+ {n:"Washington",  a:"WA", f:"🌲", r:"us", pop:7705281,  gdp:838, gdppc:108762,gini:0.448,median:82400, poverty:9.7, life:80.1,unemp:3.9, hdi:0.940,health:7100,homicide:3.5, top10:44.8,mob:74,edu:517,co2:10.4},
+ {n:"Ohio",        a:"OH", f:"🌻", r:"us", pop:11799448, gdp:813, gdppc:68902, gini:0.445,median:62689, poverty:12.9,life:75.9,unemp:3.8, hdi:0.899,health:6200,homicide:6.9, top10:43.3,mob:70,edu:490,co2:17.1},
+ {n:"New Jersey",  a:"NJ", f:"🏙️", r:"us", pop:9288994,  gdp:792, gdppc:85271, gini:0.457,median:89703, poverty:9.2, life:79.5,unemp:3.9, hdi:0.937,health:7200,homicide:3.8, top10:44.9,mob:73,edu:519,co2:10.1},
+ {n:"Géorgie",     a:"GA", f:"🍑", r:"us", pop:10711908, gdp:756, gdppc:70576, gini:0.463,median:61224, poverty:13.5,life:76.3,unemp:3.2, hdi:0.898,health:5800,homicide:9.3, top10:47.2,mob:67,edu:476,co2:12.8},
+ {n:"Massachusetts",a:"MA",f:"🦞", r:"us", pop:7029917,  gdp:692, gdppc:98444, gini:0.472,median:89645, poverty:9.2, life:80.6,unemp:3.6, hdi:0.951,health:8200,homicide:2.1, top10:46.1,mob:74,edu:530,co2:8.2},
+ {n:"Caroline du Nord",a:"NC",f:"🌿",r:"us",pop:10439388,gdp:697, gdppc:66772, gini:0.453,median:57341, poverty:13.9,life:76.5,unemp:3.4, hdi:0.900,health:5900,homicide:8.3, top10:44.8,mob:68,edu:489,co2:13.1},
+ {n:"Virginie",    a:"VA", f:"🏛️", r:"us", pop:8631393,  gdp:668, gdppc:77382, gini:0.453,median:80963, poverty:9.3, life:78.4,unemp:3.0, hdi:0.928,health:6300,homicide:5.1, top10:44.5,mob:71,edu:512,co2:12.2},
+ {n:"Michigan",    a:"MI", f:"🚗", r:"us", pop:10077331, gdp:607, gdppc:60232, gini:0.453,median:59584, poverty:13.4,life:76.6,unemp:3.8, hdi:0.896,health:6100,homicide:7.7, top10:43.8,mob:70,edu:488,co2:14.9},
+ {n:"Maryland",    a:"MD", f:"🦀", r:"us", pop:6177224,  gdp:477, gdppc:77271, gini:0.448,median:94384, poverty:8.3, life:78.7,unemp:3.3, hdi:0.940,health:7000,homicide:8.1, top10:44.2,mob:73,edu:516,co2:10.5},
+ {n:"Colorado",    a:"CO", f:"⛰️", r:"us", pop:5773714,  gdp:513, gdppc:88862, gini:0.455,median:77127, poverty:9.4, life:80.4,unemp:3.3, hdi:0.933,health:6400,homicide:4.4, top10:43.6,mob:73,edu:512,co2:13.0},
+ {n:"Tennessee",   a:"TN", f:"🎸", r:"us", pop:6910840,  gdp:476, gdppc:68880, gini:0.459,median:54833, poverty:14.8,life:75.4,unemp:3.2, hdi:0.886,health:5700,homicide:11.3,top10:46.2,mob:66,edu:470,co2:15.2},
+ {n:"Arizona",     a:"AZ", f:"🌵", r:"us", pop:7151502,  gdp:467, gdppc:65302, gini:0.455,median:61529, poverty:12.9,life:77.9,unemp:3.6, hdi:0.899,health:5800,homicide:6.1, top10:44.0,mob:67,edu:478,co2:14.6},
+ {n:"Indiana",     a:"IN", f:"🏎️", r:"us", pop:6785528,  gdp:467, gdppc:68826, gini:0.434,median:58235, poverty:11.7,life:76.1,unemp:3.1, hdi:0.893,health:5900,homicide:7.2, top10:41.2,mob:68,edu:479,co2:19.4},
+ {n:"Minnesota",   a:"MN", f:"🌊", r:"us", pop:5706494,  gdp:467, gdppc:81845, gini:0.438,median:80441, poverty:8.5, life:80.8,unemp:3.2, hdi:0.942,health:6900,homicide:3.7, top10:42.1,mob:74,edu:521,co2:14.1},
+ {n:"Wisconsin",   a:"WI", f:"🧀", r:"us", pop:5893718,  gdp:392, gdppc:66504, gini:0.430,median:65757, poverty:10.5,life:79.1,unemp:2.8, hdi:0.910,health:6200,homicide:4.8, top10:41.3,mob:72,edu:501,co2:14.4},
+ {n:"Missouri",    a:"MO", f:"🌉", r:"us", pop:6154913,  gdp:393, gdppc:63857, gini:0.454,median:57290, poverty:12.8,life:76.1,unemp:2.9, hdi:0.893,health:6100,homicide:10.1,top10:44.6,mob:68,edu:482,co2:15.8},
+ {n:"Connecticut", a:"CT", f:"⚓", r:"us", pop:3605944,  gdp:350, gdppc:97067, gini:0.497,median:83771, poverty:9.6, life:80.2,unemp:3.8, hdi:0.949,health:8100,homicide:3.5, top10:50.2,mob:71,edu:519,co2:8.5},
+ {n:"Oregon",      a:"OR", f:"🌲", r:"us", pop:4237256,  gdp:304, gdppc:71779, gini:0.455,median:70084, poverty:10.7,life:79.0,unemp:3.8, hdi:0.915,health:6400,homicide:4.4, top10:43.8,mob:72,edu:504,co2:10.7},
+ {n:"Caroline du Sud",a:"SC",f:"🌴",r:"us",pop:5118425,  gdp:296, gdppc:57843, gini:0.458,median:55564, poverty:15.4,life:76.2,unemp:3.0, hdi:0.882,health:5800,homicide:10.3,top10:44.3,mob:65,edu:472,co2:13.5},
+ {n:"Utah",        a:"UT", f:"🏜️", r:"us", pop:3271616,  gdp:258, gdppc:78868, gini:0.406,median:79133, poverty:8.1, life:80.7,unemp:2.6, hdi:0.928,health:5700,homicide:2.2, top10:38.9,mob:74,edu:514,co2:15.7},
+ {n:"Alabama",     a:"AL", f:"🌺", r:"us", pop:5024279,  gdp:279, gdppc:55544, gini:0.464,median:52035, poverty:16.0,life:74.2,unemp:2.9, hdi:0.873,health:5700,homicide:11.8,top10:44.1,mob:62,edu:461,co2:18.8},
+ {n:"Louisiane",   a:"LA", f:"🎺", r:"us", pop:4657757,  gdp:275, gdppc:59048, gini:0.479,median:50800, poverty:18.6,life:73.1,unemp:3.7, hdi:0.862,health:5900,homicide:17.0,top10:45.9,mob:61,edu:448,co2:26.2},
+ {n:"Kentucky",    a:"KY", f:"🐎", r:"us", pop:4505836,  gdp:272, gdppc:60364, gini:0.460,median:52238, poverty:16.1,life:74.6,unemp:3.7, hdi:0.873,health:5800,homicide:9.0, top10:43.7,mob:62,edu:460,co2:19.2},
+ {n:"Oklahoma",    a:"OK", f:"🌾", r:"us", pop:3959353,  gdp:268, gdppc:67692, gini:0.456,median:54449, poverty:14.9,life:75.2,unemp:3.1, hdi:0.883,health:5700,homicide:8.2, top10:43.8,mob:64,edu:465,co2:21.0},
+ {n:"Iowa",        a:"IA", f:"🌽", r:"us", pop:3190369,  gdp:248, gdppc:77742, gini:0.415,median:65429, poverty:10.4,life:79.6,unemp:2.5, hdi:0.919,health:6200,homicide:3.1, top10:38.3,mob:73,edu:508,co2:18.5},
+ {n:"Nevada",      a:"NV", f:"🎲", r:"us", pop:3104614,  gdp:231, gdppc:74407, gini:0.448,median:63276, poverty:12.3,life:76.5,unemp:4.8, hdi:0.890,health:5900,homicide:7.2, top10:44.8,mob:67,edu:466,co2:12.1},
+ {n:"Kansas",      a:"KS", f:"🌻", r:"us", pop:2937880,  gdp:222, gdppc:75581, gini:0.441,median:61091, poverty:11.2,life:78.2,unemp:2.7, hdi:0.909,health:6100,homicide:5.2, top10:41.1,mob:70,edu:493,co2:17.8},
+ {n:"Mississippi", a:"MS", f:"🐊", r:"us", pop:2961279,  gdp:125, gdppc:42205, gini:0.467,median:46637, poverty:18.8,life:71.9,unemp:3.8, hdi:0.839,health:5500,homicide:19.9,top10:43.2,mob:58,edu:440,co2:16.0},
+ {n:"Arkansas",    a:"AR", f:"💎", r:"us", pop:3011524,  gdp:168, gdppc:55791, gini:0.454,median:50540, poverty:16.9,life:74.6,unemp:2.9, hdi:0.868,health:5600,homicide:11.4,top10:42.9,mob:60,edu:455,co2:17.3},
+ {n:"Nebraska",    a:"NE", f:"🌾", r:"us", pop:1961504,  gdp:170, gdppc:86669, gini:0.426,median:66644, poverty:9.9, life:80.1,unemp:2.1, hdi:0.924,health:6300,homicide:3.5, top10:38.8,mob:72,edu:503,co2:19.3},
+ {n:"Nouveau-Mexique",a:"NM",f:"☀️",r:"us",pop:2117522, gdp:121, gdppc:57143, gini:0.455,median:49754, poverty:18.2,life:73.5,unemp:4.2, hdi:0.863,health:5700,homicide:10.8,top10:43.5,mob:62,edu:454,co2:14.8},
+ {n:"Idaho",       a:"ID", f:"🥔", r:"us", pop:1839106,  gdp:111, gdppc:60357, gini:0.420,median:61004, poverty:9.8, life:79.0,unemp:2.7, hdi:0.906,health:5600,homicide:2.5, top10:37.9,mob:71,edu:493,co2:15.1},
+ {n:"Virginie-Occ.",a:"WV",f:"⛏️", r:"us", pop:1793716,  gdp:102, gdppc:56860, gini:0.452,median:46711, poverty:17.1,life:72.8,unemp:4.2, hdi:0.858,health:5900,homicide:6.2, top10:39.5,mob:61,edu:452,co2:26.8},
+ {n:"Hawaï",       a:"HI", f:"🌺", r:"us", pop:1455271,  gdp:99,  gdppc:68000, gini:0.442,median:83173, poverty:8.3, life:81.6,unemp:3.0, hdi:0.940,health:5700,homicide:1.9, top10:40.1,mob:74,edu:499,co2:8.6},
+ {n:"New Hampshire",a:"NH",f:"🍂", r:"us", pop:1377529,  gdp:107, gdppc:77699, gini:0.423,median:90845, poverty:6.3, life:80.9,unemp:2.2, hdi:0.943,health:7200,homicide:1.0, top10:38.5,mob:75,edu:522,co2:8.1},
+ {n:"Maine",       a:"ME", f:"🦞", r:"us", pop:1362359,  gdp:89,  gdppc:65333, gini:0.427,median:62009, poverty:10.6,life:79.3,unemp:2.7, hdi:0.912,health:6300,homicide:2.0, top10:38.9,mob:72,edu:501,co2:9.8},
+ {n:"Rhode Island",a:"RI", f:"⚓", r:"us", pop:1097379,  gdp:79,  gdppc:72003, gini:0.461,median:70305, poverty:10.1,life:79.3,unemp:3.7, hdi:0.918,health:7100,homicide:3.0, top10:43.7,mob:71,edu:504,co2:8.3},
+ {n:"Delaware",    a:"DE", f:"🏛️", r:"us", pop:989948,   gdp:89,  gdppc:89903, gini:0.438,median:72724, poverty:10.0,life:78.2,unemp:3.6, hdi:0.927,health:6900,homicide:8.1, top10:41.6,mob:72,edu:495,co2:11.6},
+ {n:"Montana",     a:"MT", f:"🦌", r:"us", pop:1084225,  gdp:72,  gdppc:66419, gini:0.437,median:57153, poverty:12.1,life:78.1,unemp:2.8, hdi:0.911,health:5900,homicide:4.3, top10:38.9,mob:71,edu:498,co2:16.0},
+ {n:"Dakota du Sud",a:"SD",f:"🦅", r:"us", pop:886667,   gdp:68,  gdppc:76670, gini:0.428,median:62012, poverty:11.0,life:79.0,unemp:2.2, hdi:0.914,health:6000,homicide:4.4, top10:38.5,mob:71,edu:497,co2:16.8},
+ {n:"Dakota du Nord",a:"ND",f:"🌾",r:"us", pop:779094,   gdp:74,  gdppc:94985, gini:0.422,median:64894, poverty:9.9, life:79.6,unemp:2.0, hdi:0.925,health:6400,homicide:3.2, top10:38.3,mob:73,edu:504,co2:41.7},
+ {n:"Alaska",      a:"AK", f:"🐻", r:"us", pop:733391,   gdp:66,  gdppc:90011, gini:0.408,median:77640, poverty:10.3,life:75.5,unemp:4.0, hdi:0.907,health:8000,homicide:7.4, top10:38.0,mob:69,edu:482,co2:23.7},
+ {n:"Vermont",     a:"VT", f:"🍁", r:"us", pop:643077,   gdp:44,  gdppc:68427, gini:0.436,median:66430, poverty:9.5, life:80.5,unemp:2.2, hdi:0.934,health:6900,homicide:1.6, top10:37.8,mob:75,edu:513,co2:9.8},
+ {n:"Wyoming",     a:"WY", f:"🐃", r:"us", pop:576851,   gdp:52,  gdppc:90129, gini:0.435,median:65562, poverty:9.9, life:77.6,unemp:3.1, hdi:0.907,health:6300,homicide:3.8, top10:38.5,mob:70,edu:491,co2:74.0},
+];
+
+// ── CANADIAN PROVINCES (converted to USD ×0.74) ──
+const CA = [
+ {n:"Ontario",    a:"ON",f:"🏙️",r:"ca",pop:14826276,gdp:756, gdppc:51013,gini:0.440,median:50320,poverty:12.3,life:82.3,unemp:4.8,hdi:0.937,health:4800,homicide:1.8,top10:29.5,mob:77,edu:523,co2:11.8},
+ {n:"Québec",     a:"QC",f:"⚜️",r:"ca",pop:8785944, gdp:415, gdppc:47257,gini:0.317,median:42180,poverty:9.9, life:83.0,unemp:3.9,hdi:0.937,health:4800,homicide:1.3,top10:25.8,mob:80,edu:521,co2:9.9},
+ {n:"Alberta",    a:"AB",f:"🛢️",r:"ca",pop:4647178, gdp:356, gdppc:76583,gini:0.446,median:62160,poverty:9.2, life:82.1,unemp:5.2,hdi:0.952,health:5100,homicide:3.5,top10:32.4,mob:75,edu:528,co2:63.0},
+ {n:"Colombie-Brit.",a:"BC",f:"🏔️",r:"ca",pop:5365088,gdp:334,gdppc:62212,gini:0.445,median:50320,poverty:11.8,life:83.7,unemp:4.3,hdi:0.944,health:4900,homicide:2.1,top10:31.2,mob:78,edu:524,co2:13.9},
+ {n:"Saskatchewan",a:"SK",f:"🌾",r:"ca",pop:1194803,gdp:75,  gdppc:63192,gini:0.430,median:53280,poverty:12.2,life:80.4,unemp:4.5,hdi:0.933,health:4700,homicide:5.1,top10:30.8,mob:73,edu:516,co2:66.0},
+ {n:"Manitoba",   a:"MB",f:"🦬",r:"ca",pop:1431792, gdp:67,  gdppc:47030,gini:0.430,median:45880,poverty:13.8,life:79.9,unemp:4.0,hdi:0.924,health:4600,homicide:5.2,top10:29.6,mob:74,edu:508,co2:16.9},
+ {n:"Nouvelle-Écosse",a:"NS",f:"🦞",r:"ca",pop:1047232,gdp:41,gdppc:39572,gini:0.410,median:40700,poverty:13.5,life:80.2,unemp:7.3,hdi:0.920,health:4500,homicide:2.0,top10:28.8,mob:76,edu:518,co2:11.0},
+ {n:"Nouveau-Brunswick",a:"NB",f:"🌲",r:"ca",pop:831618,gdp:34,gdppc:40935,gini:0.397,median:38480,poverty:11.6,life:80.8,unemp:7.0,hdi:0.918,health:4400,homicide:1.6,top10:27.9,mob:75,edu:512,co2:13.4},
+ {n:"Terre-Neuve",a:"NL",f:"🐟",r:"ca",pop:531948, gdp:30,  gdppc:57029,gini:0.402,median:45880,poverty:13.6,life:79.1,unemp:10.9,hdi:0.920,health:4600,homicide:1.5,top10:29.3,mob:72,edu:506,co2:13.5},
+ {n:"Île-du-P.-Éd.",a:"PE",f:"🥔",r:"ca",pop:177032,gdp:7.4,gdppc:41803,gini:0.388,median:38480,poverty:12.5,life:82.1,unemp:8.1,hdi:0.915,health:4300,homicide:0.8,top10:27.1,mob:76,edu:521,co2:7.8},
+ {n:"Yukon",      a:"YT",f:"🐺",r:"ca",pop:45002,  gdp:3.3, gdppc:72352,gini:0.370,median:65120,poverty:7.1, life:77.6,unemp:5.5,hdi:0.940,health:5200,homicide:3.8,top10:28.5,mob:77,edu:509,co2:12.3},
+ {n:"Territoires N.-O.",a:"NT",f:"❄️",r:"ca",pop:45561,gdp:3.8,gdppc:84462,gini:0.395,median:70300,poverty:6.8, life:76.0,unemp:7.3,hdi:0.904,health:5800,homicide:9.2,top10:30.0,mob:65,edu:488,co2:34.5},
+ {n:"Nunavut",    a:"NU",f:"🐻‍❄️",r:"ca",pop:39285,gdp:2.3,gdppc:58397,gini:0.422,median:40700,poverty:18.3,life:70.2,unemp:14.4,hdi:0.810,health:5400,homicide:16.8,top10:35.0,mob:52,edu:399,co2:8.5},
+];
+
+// ── EUROPEAN COUNTRIES ──
+const EU = [
+ {n:"Allemagne",   a:"DE",f:"🇩🇪",r:"eu",pop:84000000, gdp:4400,gdppc:52400,gini:0.310,median:40000,poverty:14.8,life:81.1,unemp:3.0,hdi:0.942,health:5600,homicide:0.9,top10:30.4,mob:78,edu:502,co2:9.1},
+ {n:"France",      a:"FR",f:"🇫🇷",r:"eu",pop:68400000, gdp:3010,gdppc:44000,gini:0.292,median:30000,poverty:14.5,life:82.5,unemp:7.4,hdi:0.910,health:4400,homicide:1.3,top10:28.5,mob:76,edu:488,co2:5.1},
+ {n:"Royaume-Uni", a:"GB",f:"🇬🇧",r:"eu",pop:67600000, gdp:3090,gdppc:45700,gini:0.360,median:35000,poverty:18.5,life:80.7,unemp:3.7,hdi:0.929,health:4200,homicide:1.1,top10:33.0,mob:75,edu:504,co2:5.0},
+ {n:"Italie",      a:"IT",f:"🇮🇹",r:"eu",pop:59200000, gdp:2170,gdppc:36600,gini:0.360,median:25000,poverty:20.1,life:83.0,unemp:8.1,hdi:0.895,health:2800,homicide:0.6,top10:30.7,mob:68,edu:476,co2:5.4},
+ {n:"Espagne",     a:"ES",f:"🇪🇸",r:"eu",pop:47700000, gdp:1600,gdppc:33500,gini:0.340,median:24000,poverty:20.4,life:83.3,unemp:13.2,hdi:0.905,health:2600,homicide:0.7,top10:30.1,mob:70,edu:480,co2:5.5},
+ {n:"Pays-Bas",    a:"NL",f:"🇳🇱",r:"eu",pop:17900000, gdp:1100,gdppc:61400,gini:0.280,median:46000,poverty:13.0,life:82.3,unemp:3.6,hdi:0.941,health:5200,homicide:0.6,top10:29.6,mob:80,edu:519,co2:8.7},
+ {n:"Suisse",      a:"CH",f:"🇨🇭",r:"eu",pop:8800000,  gdp:840, gdppc:95500,gini:0.330,median:72000,poverty:8.7, life:84.4,unemp:2.0,hdi:0.962,health:7400,homicide:0.6,top10:31.3,mob:83,edu:516,co2:4.2},
+ {n:"Suède",       a:"SE",f:"🇸🇪",r:"eu",pop:10500000, gdp:600, gdppc:57100,gini:0.270,median:45000,poverty:8.5, life:83.0,unemp:8.5,hdi:0.952,health:5400,homicide:1.1,top10:27.8,mob:83,edu:497,co2:3.8},
+ {n:"Norvège",     a:"NO",f:"🇳🇴",r:"eu",pop:5500000,  gdp:580, gdppc:105400,gini:0.260,median:68000,poverty:9.0,life:83.2,unemp:3.6,hdi:0.961,health:6300,homicide:0.5,top10:26.8,mob:82,edu:503,co2:7.9},
+ {n:"Belgique",    a:"BE",f:"🇧🇪",r:"eu",pop:11600000, gdp:640, gdppc:55200,gini:0.260,median:41000,poverty:14.1,life:82.1,unemp:5.6,hdi:0.937,health:4900,homicide:1.7,top10:27.3,mob:77,edu:499,co2:7.8},
+ {n:"Autriche",    a:"AT",f:"🇦🇹",r:"eu",pop:9100000,  gdp:515, gdppc:56600,gini:0.300,median:42000,poverty:13.5,life:82.3,unemp:4.8,hdi:0.916,health:5700,homicide:0.8,top10:29.2,mob:78,edu:490,co2:7.7},
+ {n:"Danemark",    a:"DK",f:"🇩🇰",r:"eu",pop:5900000,  gdp:420, gdppc:71200,gini:0.280,median:50000,poverty:11.3,life:81.8,unemp:5.0,hdi:0.948,health:5400,homicide:0.8,top10:27.3,mob:85,edu:512,co2:5.8},
+ {n:"Finlande",    a:"FI",f:"🇫🇮",r:"eu",pop:5600000,  gdp:305, gdppc:54400,gini:0.270,median:40000,poverty:11.8,life:82.0,unemp:7.5,hdi:0.940,health:4400,homicide:1.7,top10:26.7,mob:84,edu:520,co2:6.2},
+ {n:"Irlande",     a:"IE",f:"🇮🇪",r:"eu",pop:5200000,  gdp:540, gdppc:103800,gini:0.310,median:47000,poverty:13.1,life:83.1,unemp:4.4,hdi:0.945,health:4900,homicide:1.2,top10:28.9,mob:79,edu:501,co2:8.1},
+ {n:"Portugal",    a:"PT",f:"🇵🇹",r:"eu",pop:10400000, gdp:280, gdppc:26900,gini:0.340,median:21000,poverty:17.0,life:82.1,unemp:6.9,hdi:0.866,health:2400,homicide:0.8,top10:32.1,mob:72,edu:490,co2:4.2},
+ {n:"Pologne",     a:"PL",f:"🇵🇱",r:"eu",pop:36800000, gdp:775, gdppc:21000,gini:0.300,median:16000,poverty:12.0,life:77.4,unemp:2.9,hdi:0.876,health:1800,homicide:0.7,top10:27.4,mob:73,edu:516,co2:8.4},
+ {n:"Rép. Tchèque",a:"CZ",f:"🇨🇿",r:"eu",pop:10900000, gdp:320, gdppc:29400,gini:0.250,median:20000,poverty:10.2,life:79.4,unemp:2.6,hdi:0.895,health:2700,homicide:0.7,top10:24.3,mob:74,edu:499,co2:9.2},
+ {n:"Grèce",       a:"GR",f:"🇬🇷",r:"eu",pop:10700000, gdp:237, gdppc:22100,gini:0.340,median:17000,poverty:18.8,life:82.1,unemp:11.1,hdi:0.887,health:1500,homicide:0.9,top10:29.8,mob:64,edu:451,co2:6.1},
+ {n:"Roumanie",    a:"RO",f:"🇷🇴",r:"eu",pop:19000000, gdp:325, gdppc:17100,gini:0.360,median:12000,poverty:21.3,life:75.6,unemp:5.2,hdi:0.821,health:1100,homicide:1.5,top10:33.7,mob:60,edu:428,co2:4.3},
+ {n:"Hongrie",     a:"HU",f:"🇭🇺",r:"eu",pop:9700000,  gdp:210, gdppc:21600,gini:0.290,median:17000,poverty:13.2,life:76.6,unemp:3.9,hdi:0.851,health:1700,homicide:1.3,top10:27.0,mob:63,edu:476,co2:5.6},
+];
+
+// ── AUSTRALIA & NEW ZEALAND ──
+const AU = [
+ {n:"Nouvelle-Galles du Sud",a:"NSW",f:"🦘",r:"au",pop:8200000, gdp:426,gdppc:51900,gini:0.390,median:52000,poverty:10.8,life:83.8,unemp:3.8,hdi:0.940,health:5100,homicide:0.9,top10:33.0,mob:80,edu:502,co2:15.1},
+ {n:"Victoria",        a:"VIC",f:"🏙️",r:"au",pop:6700000, gdp:351,gdppc:52400,gini:0.370,median:52000,poverty:9.8, life:84.2,unemp:3.5,hdi:0.942,health:5100,homicide:0.8,top10:32.5,mob:81,edu:507,co2:12.8},
+ {n:"Queensland",      a:"QLD",f:"🌞",r:"au",pop:5400000, gdp:279,gdppc:51700,gini:0.390,median:50000,poverty:12.1,life:83.1,unemp:3.7,hdi:0.934,health:4900,homicide:1.3,top10:33.2,mob:78,edu:495,co2:17.2},
+ {n:"Australie-Occ.",  a:"WA", f:"💎",r:"au",pop:2800000, gdp:244,gdppc:87300,gini:0.410,median:60000,poverty:9.5, life:83.6,unemp:3.3,hdi:0.946,health:5200,homicide:1.4,top10:36.0,mob:77,edu:496,co2:26.8},
+ {n:"Australie-Mérid.",a:"SA", f:"🍷",r:"au",pop:1800000, gdp:85, gdppc:47200,gini:0.380,median:49000,poverty:13.2,life:83.2,unemp:4.5,hdi:0.931,health:4800,homicide:1.1,top10:31.5,mob:78,edu:499,co2:12.6},
+ {n:"Tasmanie",        a:"TAS",f:"🦁",r:"au",pop:570000,  gdp:24.7,gdppc:43300,gini:0.360,median:44000,poverty:14.5,life:82.7,unemp:5.1,hdi:0.922,health:4700,homicide:0.7,top10:30.2,mob:76,edu:490,co2:7.2},
+ {n:"ACT (Canberra)",  a:"ACT",f:"🏛️",r:"au",pop:460000,  gdp:32.5,gdppc:70700,gini:0.340,median:75000,poverty:7.1, life:84.8,unemp:3.1,hdi:0.960,health:5700,homicide:0.7,top10:29.0,mob:85,edu:525,co2:11.2},
+ {n:"Territoire du Nord",a:"NT",f:"🪃",r:"au",pop:250000, gdp:17.5,gdppc:70000,gini:0.460,median:52000,poverty:22.0,life:76.5,unemp:4.4,hdi:0.896,health:5000,homicide:7.2,top10:38.0,mob:60,edu:440,co2:31.5},
+ {n:"Nouvelle-Zélande",a:"NZ", f:"🇳🇿",r:"au",pop:5100000, gdp:224,gdppc:43900,gini:0.330,median:37000,poverty:11.0,life:82.5,unemp:3.4,hdi:0.939,health:4400,homicide:1.0,top10:30.5,mob:80,edu:494,co2:6.7},
+];
+
+// Merge all data
+DATA.push(...US, ...CA, ...EU, ...AU);
+
+// ══════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════
+const activeRegions = { us:true, ca:true, eu:true, au:true };
+let sortKey = 'gdp';
+let sortDir = 'desc';
+const visibleCols = {};
+COLS.forEach(c => visibleCols[c.key] = true);
+
+// ══════════════════════════════════════════════════════════
+// COLUMN PANEL
+// ══════════════════════════════════════════════════════════
+function buildColPanel() {
+  const wrap = document.getElementById('colChecks');
+  wrap.innerHTML = COLS.map(c => `
+    <label class="col-check ${visibleCols[c.key]?'checked':''}" id="lbl-${c.key}">
+      <input type="checkbox" ${visibleCols[c.key]?'checked':''} onchange="toggleCol('${c.key}',this.checked)">
+      ${c.label}
+    </label>
+  `).join('');
+}
+
+function toggleCol(key, checked) {
+  visibleCols[key] = checked;
+  document.getElementById('lbl-'+key).classList.toggle('checked', checked);
+  renderTable();
+}
+
+function setAllCols(val) {
+  COLS.forEach(c => { visibleCols[c.key] = val; });
+  buildColPanel();
+  renderTable();
+}
+
+function toggleColPanel() {
+  const panel = document.getElementById('colPanel');
+  const btn   = document.getElementById('colBtn');
+  panel.classList.toggle('open');
+  btn.classList.toggle('open');
+}
+
+// Close panel on outside click
+document.addEventListener('click', e => {
+  const panel = document.getElementById('colPanel');
+  const btn = document.getElementById('colBtn');
+  if (!panel.contains(e.target) && e.target !== btn) {
+    panel.classList.remove('open');
+    btn.classList.remove('open');
+  }
+});
+
+// ══════════════════════════════════════════════════════════
+// REGION TOGGLES
+// ══════════════════════════════════════════════════════════
+function toggleRegion(r) {
+  activeRegions[r] = !activeRegions[r];
+  document.querySelector(`.rtog[data-r="${r}"]`).classList.toggle('active', activeRegions[r]);
+  renderTable();
+}
+
+// ══════════════════════════════════════════════════════════
+// SORT
+// ══════════════════════════════════════════════════════════
+function quickSort(btn, key) {
+  document.querySelectorAll('.sbtn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (sortKey === key) {
+    sortDir = sortDir === 'desc' ? 'asc' : 'desc';
+  } else {
+    sortKey = key;
+    const col = COLS.find(c => c.key === key);
+    sortDir = col ? col.dir : 'desc';
+  }
+  renderTable();
+}
+
+function sortByCol(key) {
+  if (sortKey === key) {
+    sortDir = sortDir === 'desc' ? 'asc' : 'desc';
+  } else {
+    sortKey = key;
+    const col = COLS.find(c => c.key === key);
+    sortDir = col ? col.dir : 'desc';
+  }
+  renderTable();
+}
+
+// ══════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════
+function fmt(n, d=0) { return n.toLocaleString('fr-FR', {maximumFractionDigits:d}); }
+function fmtGDP(v) { return v>=1000 ? (v/1000).toFixed(2)+' T' : fmt(v)+' G'; }
+
+function giniClass(v) { return v<0.30?'gini-lo': v<0.40?'gini-lo': v<0.44?'gini-md':'gini-hi'; }
+function lifeClass(v) { return v>=82?'life-hi': v>=78?'life-md':'life-lo'; }
+function hdiClass(v)  { return v>=0.92?'hdi-hi': v>=0.86?'hdi-md':'hdi-lo'; }
+
+function gradientColor(val, max, col) { return col; }
+
+function getMax(data, key) { return Math.max(...data.map(d => d[key])); }
+function getMin(data, key) { return Math.min(...data.map(d => d[key])); }
+
+function colorForValue(val, min, max, inverse=false) {
+  const ratio = (val - min) / (max - min);
+  const r = inverse ? ratio : 1 - ratio;
+  if (r < 0.33) return 'var(--rose)';
+  if (r < 0.66) return 'var(--amber)';
+  return 'var(--green)';
+}
+
+// ══════════════════════════════════════════════════════════
+// RENDER STATS
+// ══════════════════════════════════════════════════════════
+function renderStats(data) {
+  const n = data.length;
+  if (!n) { document.getElementById('statsStrip').innerHTML=''; return; }
+  const totalGdp  = data.reduce((s,d)=>s+d.gdp,0);
+  const avgGdppc  = data.reduce((s,d)=>s+d.gdppc,0)/n;
+  const avgGini   = data.reduce((s,d)=>s+d.gini,0)/n;
+  const avgLife   = data.reduce((s,d)=>s+d.life,0)/n;
+  const avgHdi    = data.reduce((s,d)=>s+d.hdi,0)/n;
+  const bestGini  = data.reduce((p,c)=>p.gini<c.gini?p:c);
+  const bestLife  = data.reduce((p,c)=>p.life>c.life?p:c);
+
+  document.getElementById('totalCount').textContent = n + ' régions';
+  document.getElementById('statsStrip').innerHTML = `
+    <div class="sc"><div class="sc-label">PIB Cumulé</div><div class="sc-val">${fmtGDP(totalGdp)}</div><div class="sc-sub">USD total</div></div>
+    <div class="sc"><div class="sc-label">PIB/Hab. Moyen</div><div class="sc-val">${fmt(Math.round(avgGdppc/1000))}k</div><div class="sc-sub">USD / an</div></div>
+    <div class="sc"><div class="sc-label">Gini Moyen</div><div class="sc-val">${avgGini.toFixed(3)}</div><div class="sc-sub">inégalités revenus</div></div>
+    <div class="sc"><div class="sc-label">Meilleur Gini</div><div class="sc-val">${bestGini.gini.toFixed(3)}</div><div class="sc-sub">${bestGini.n}</div></div>
+    <div class="sc"><div class="sc-label">Espér. Vie Moy.</div><div class="sc-val">${avgLife.toFixed(1)}</div><div class="sc-sub">années</div></div>
+    <div class="sc"><div class="sc-label">+ Longue Vie</div><div class="sc-val">${bestLife.life.toFixed(1)}</div><div class="sc-sub">${bestLife.n}</div></div>
+    <div class="sc"><div class="sc-label">IDH Moyen</div><div class="sc-val">${avgHdi.toFixed(3)}</div><div class="sc-sub">indice PNUD</div></div>
+    <div class="sc"><div class="sc-label">Régions classées</div><div class="sc-val">${n}</div><div class="sc-sub">sur ${Object.values(activeRegions).filter(Boolean).length} groupes actifs</div></div>
+  `;
+}
+
+// ══════════════════════════════════════════════════════════
+// RENDER TABLE
+// ══════════════════════════════════════════════════════════
+function renderTable() {
+  const search = document.getElementById('searchInput').value.toLowerCase().trim();
+
+  // Filter by region and search
+  let data = DATA.filter(d => {
+    if (!activeRegions[d.r]) return false;
+    if (search) return d.n.toLowerCase().includes(search) || d.a.toLowerCase().includes(search);
+    return true;
+  });
+
+  // Sort
+  data.sort((a,b) => {
+    const col = COLS.find(c=>c.key===sortKey);
+    const asc = sortDir === 'asc';
+    const av = a[sortKey], bv = b[sortKey];
+    return asc ? av-bv : bv-av;
+  });
+
+  renderStats(data);
+
+  const activeCols = COLS.filter(c => visibleCols[c.key]);
+
+  // Build max/min for bars
+  const maxMap = {}, minMap = {};
+  activeCols.forEach(c => {
+    maxMap[c.key] = getMax(data, c.key) || 1;
+    minMap[c.key] = getMin(data, c.key);
+  });
+
+  // ── THEAD ──
+  const theadRow = document.getElementById('theadRow');
+  theadRow.innerHTML = `
+    <th>#</th>
+    <th>Région</th>
+    ${activeCols.map(c => `
+      <th id="th-${c.key}" class="${sortKey===c.key?'sorted':''}" onclick="sortByCol('${c.key}')"
+          data-tip="${c.sub}">
+        ${c.label}
+        <span class="si">${sortKey===c.key?(sortDir==='desc'?'↓':'↑'):'↕'}</span>
+      </th>
+    `).join('')}
+  `;
+
+  // ── TBODY ──
+  const tbody = document.getElementById('tbody');
+
+  if (!data.length) {
+    tbody.innerHTML = `<tr><td colspan="${activeCols.length+2}" class="no-results">Aucun résultat trouvé</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = data.map((d, i) => {
+    const cells = activeCols.map(c => {
+      const val = d[c.key];
+      const max = maxMap[c.key];
+      const min = minMap[c.key];
+      const barPct = ((val - min) / (max - min) * 100).toFixed(1);
+      const isInverse = c.dir === 'asc'; // lower is better
+
+      let cellContent = '';
+      if (c.key === 'gini') {
+        cellContent = `<span class="badge ${giniClass(val)}">${val.toFixed(3)}</span>`;
+      } else if (c.key === 'life') {
+        cellContent = `<span class="badge ${lifeClass(val)}">${val.toFixed(1)} ans</span>`;
+      } else if (c.key === 'hdi') {
+        cellContent = `<span class="badge ${hdiClass(val)}">${val.toFixed(3)}</span>`;
+      } else if (c.key === 'gdp') {
+        cellContent = `<div class="vn">${fmtGDP(val)}</div><div class="vs">USD</div>`;
+      } else if (c.key === 'gdppc' || c.key === 'median' || c.key === 'health') {
+        cellContent = `<div class="vn">${fmt(val)} $</div><div class="vs">USD/an</div>`;
+      } else if (c.key === 'poverty' || c.key === 'unemp') {
+        const col = colorForValue(val, min, max, false);
+        cellContent = `<div class="vn" style="color:${col}">${val.toFixed(1)} %</div>`;
+      } else if (c.key === 'homicide') {
+        const col = colorForValue(val, min, max, false);
+        cellContent = `<div class="vn" style="color:${col}">${val.toFixed(1)}</div><div class="vs">/100k hab.</div>`;
+      } else if (c.key === 'top10') {
+        const col = colorForValue(val, min, max, false);
+        cellContent = `<div class="vn" style="color:${col}">${val.toFixed(1)} %</div>`;
+      } else if (c.key === 'mob' || c.key === 'edu') {
+        const col = colorForValue(val, min, max, true);
+        cellContent = `<div class="vn" style="color:${col}">${fmt(val)}</div>`;
+      } else if (c.key === 'co2') {
+        const col = colorForValue(val, min, max, false);
+        cellContent = `<div class="vn" style="color:${col}">${val.toFixed(1)}</div><div class="vs">t / an</div>`;
+      } else {
+        cellContent = `<div class="vn">${fmt(val,1)}</div>`;
+      }
+
+      const barColor = isInverse
+        ? (barPct > 66 ? 'var(--rose)' : barPct > 33 ? 'var(--amber)' : 'var(--green)')
+        : (barPct > 66 ? 'var(--green)' : barPct > 33 ? 'var(--amber)' : 'var(--rose)');
+
+      return `<td class="dc">${cellContent}<div class="bt"><div class="bf" style="width:${barPct}%;background:${c.color}33;border-top:1px solid ${c.color}77;"></div></div></td>`;
+    }).join('');
+
+    const rank = i+1;
+    const rankStyle = rank===1?`color:var(--gold);font-size:17px`:rank===2?`color:#a0b4c8;font-size:15px`:rank===3?`color:#8a7060`:``;
+
+    return `
+      <tr>
+        <td class="rk" style="${rankStyle}">${rank}</td>
+        <td>
+          <div class="nc">
+            <span class="flag">${d.f}</span>
+            <div>
+              <div class="n1">${d.n}</div>
+              <div class="n2">${d.a} · ${fmt(d.pop)} hab.</div>
+            </div>
+            <div class="rdot rdot-${d.r}" style="margin-left:auto;flex-shrink:0;"></div>
+          </div>
+        </td>
+        ${cells}
+      </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════
+buildColPanel();
+renderTable();
+</script>
+</body>
+</html>
